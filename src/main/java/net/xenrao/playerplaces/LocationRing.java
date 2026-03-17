@@ -20,48 +20,29 @@ public class LocationRing {
 		BufferBuilder builder = Tesselator.getInstance().getBuilder();
 		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-		double majorRadius = 0.55;
-		double minorRadius = 0.08;
-		int majorSteps = 90;
-		int minorSteps = 16;
-		double majorStep = 360.0 / majorSteps;
-		double minorStep = 360.0 / minorSteps;
+		int segments = 64;
+		double innerRadius = 0.85;
+		double outerRadius = 1.0;
+		double step = 360.0 / segments;
 
-		for (int i = 0; i < majorSteps; i++) {
-			double a0 = Math.toRadians(i * majorStep);
-			double a1 = Math.toRadians((i + 1) * majorStep);
+		for (int i = 0; i < segments; i++) {
+			double a0 = Math.toRadians(i * step);
+			double a1 = Math.toRadians((i + 1) * step);
 
-			for (int j = 0; j < minorSteps; j++) {
-				double b0 = Math.toRadians(j * minorStep);
-				double b1 = Math.toRadians((j + 1) * minorStep);
+			double cos0 = Math.cos(a0);
+			double sin0 = Math.sin(a0);
+			double cos1 = Math.cos(a1);
+			double sin1 = Math.sin(a1);
 
-				int c0 = clamp((int) (208 + 48 * Math.sin(b1)));
-				int c1 = clamp((int) (208 + 48 * Math.sin(b0)));
+			// Outer edge brighter, inner edge slightly darker
+			int outerColor = 0xFFFFFFFF;
+			int innerColor = 0xAAFFFFFF;
 
-				int color0 = 255 << 24 | c0 << 16 | c0 << 8 | c0;
-				int color1 = 255 << 24 | c1 << 16 | c1 << 8 | c1;
-
-				double x00 = Math.sin(a0) * (majorRadius + minorRadius * Math.cos(b1));
-				double y00 = minorRadius * Math.sin(b1);
-				double z00 = Math.cos(a0) * (majorRadius + minorRadius * Math.cos(b1));
-
-				double x01 = Math.sin(a0) * (majorRadius + minorRadius * Math.cos(b0));
-				double y01 = minorRadius * Math.sin(b0);
-				double z01 = Math.cos(a0) * (majorRadius + minorRadius * Math.cos(b0));
-
-				double x10 = Math.sin(a1) * (majorRadius + minorRadius * Math.cos(b0));
-				double y10 = minorRadius * Math.sin(b0);
-				double z10 = Math.cos(a1) * (majorRadius + minorRadius * Math.cos(b0));
-
-				double x11 = Math.sin(a1) * (majorRadius + minorRadius * Math.cos(b1));
-				double y11 = minorRadius * Math.sin(b1);
-				double z11 = Math.cos(a1) * (majorRadius + minorRadius * Math.cos(b1));
-
-				builder.vertex(x00, y00, z00).color(color0).endVertex();
-				builder.vertex(x01, y01, z01).color(color1).endVertex();
-				builder.vertex(x10, y10, z10).color(color1).endVertex();
-				builder.vertex(x11, y11, z11).color(color0).endVertex();
-			}
+			// Quad: outer0, inner0, inner1, outer1
+			builder.vertex(cos0 * outerRadius, 0, sin0 * outerRadius).color(outerColor).endVertex();
+			builder.vertex(cos0 * innerRadius, 0, sin0 * innerRadius).color(innerColor).endVertex();
+			builder.vertex(cos1 * innerRadius, 0, sin1 * innerRadius).color(innerColor).endVertex();
+			builder.vertex(cos1 * outerRadius, 0, sin1 * outerRadius).color(outerColor).endVertex();
 		}
 
 		if (vertexBuffer != null) vertexBuffer.close();
@@ -69,10 +50,6 @@ public class LocationRing {
 		vertexBuffer.bind();
 		vertexBuffer.upload(builder.end());
 		VertexBuffer.unbind();
-	}
-
-	private static int clamp(int value) {
-		return Math.max(0, Math.min(255, value));
 	}
 
 	public static void cleanup() {

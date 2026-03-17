@@ -197,13 +197,15 @@ public class AdminScreen extends Screen {
 
 			int editX = listX + listWidth - 70;
 			boolean editHov = mouseX >= editX && mouseX <= editX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16;
-			graphics.fill(editX, entryY + 2, editX + 30, entryY + 16, editHov ? 0xFF5555FF : 0xFF3333AA);
-			graphics.drawCenteredString(this.font, "Edit", editX + 15, entryY + 5, 0xFFFFFF);
+			int buttonY = entryY + 3;
+			
+			graphics.fill(editX, buttonY, editX + 30, buttonY + 14, editHov ? 0xFF5555FF : 0xFF3333AA);
+			graphics.drawCenteredString(this.font, "Edit", editX + 15, buttonY + 3, 0xFFFFFF);
 
 			int delX = listX + listWidth - 34;
 			boolean delHov = mouseX >= delX && mouseX <= delX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16;
-			graphics.fill(delX, entryY + 2, delX + 30, entryY + 16, delHov ? 0xFFFF3333 : 0xFFAA0000);
-			graphics.drawCenteredString(this.font, "Del", delX + 15, entryY + 5, 0xFFFFFF);
+			graphics.fill(delX, buttonY, delX + 30, buttonY + 14, delHov ? 0xFFFF3333 : 0xFFAA0000);
+			graphics.drawCenteredString(this.font, "Del", delX + 15, buttonY + 3, 0xFFFFFF);
 
 			if (hovered && mouseX < editX) {
 				List<Component> tooltip = new ArrayList<>();
@@ -230,8 +232,9 @@ public class AdminScreen extends Screen {
 			graphics.drawString(this.font, "Icon: " + cat.getIcon(), listX + 4, entryY + 12, 0x888888);
 			int delX = listX + listWidth - 30;
 			boolean delHov = mouseX >= delX && mouseX <= delX + 26 && mouseY >= entryY + 2 && mouseY <= entryY + 16;
-			graphics.fill(delX, entryY + 2, delX + 26, entryY + 16, delHov ? 0xFFFF3333 : 0xFFAA0000);
-			graphics.drawCenteredString(this.font, "Del", delX + 13, entryY + 5, 0xFFFFFF);
+			int buttonY = entryY + 3;
+			graphics.fill(delX, buttonY, delX + 26, buttonY + 14, delHov ? 0xFFFF3333 : 0xFFAA0000);
+			graphics.drawCenteredString(this.font, "Del", delX + 13, buttonY + 3, 0xFFFFFF);
 		}
 		graphics.drawString(this.font, "Add New Category:", this.width / 2 - 120, this.height - 96, 0xAAAAAA);
 	}
@@ -259,12 +262,13 @@ public class AdminScreen extends Screen {
 				Location loc = filteredLocations.get(index);
 				int entryY = listY + i * ENTRY_HEIGHT;
 				int editX = listX + listWidth - 70;
-				if (mouseX >= editX && mouseX <= editX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16) {
+				int buttonY = entryY + 3;
+				if (mouseX >= editX && mouseX <= editX + 30 && mouseY >= buttonY && mouseY <= buttonY + 14){
 					Minecraft.getInstance().setScreen(new AdminEditScreen(this, loc));
 					return true;
 				}
 				int delX = listX + listWidth - 34;
-				if (mouseX >= delX && mouseX <= delX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16) {
+				if (mouseX >= delX && mouseX <= delX + 30 && mouseY >= buttonY && mouseY <= buttonY + 14) {
 					PlayerPlacesMod.PACKET_HANDLER.sendToServer(
 							new AdminActionPacket(AdminActionPacket.ACTION_DELETE_LOCATION, loc.getId(), "", ""));
 					return true;
@@ -279,7 +283,8 @@ public class AdminScreen extends Screen {
 			for (int i = 0; i < cats.size(); i++) {
 				int entryY = listY + i * ENTRY_HEIGHT;
 				int delX = listX + listWidth - 30;
-				if (mouseX >= delX && mouseX <= delX + 26 && mouseY >= entryY + 2 && mouseY <= entryY + 16) {
+				int buttonY = entryY + 4;
+				if (mouseX >= delX && mouseX <= delX + 26 && mouseY >= buttonY && mouseY <= buttonY + 14){
 					PlayerPlacesMod.PACKET_HANDLER.sendToServer(
 							new AdminActionPacket(AdminActionPacket.ACTION_REMOVE_CATEGORY, cats.get(i).getId(), "", ""));
 					return true;

@@ -217,7 +217,7 @@ public class LocationListScreen extends Screen {
 				graphics.drawString(this.font, displayName, listX + 24, entryY + 3, 0xFFFFFF);
 				graphics.drawString(this.font, "by " + loc.getOwnerName(), listX + 24, entryY + 13, 0xAAAAAA);
 
-				int trackBtnX = listX + listWidth - 50;
+				int trackBtnX = listX + listWidth - 44;
 				int trackBtnW = 40;
 				boolean trackHovered = mouseX >= trackBtnX && mouseX <= trackBtnX + trackBtnW
 						&& mouseY >= entryY + 2 && mouseY <= entryY + 16;
@@ -227,8 +227,9 @@ public class LocationListScreen extends Screen {
 				int trackColor;
 				if (isTracked) trackColor = trackHovered ? 0xFFFF5555 : 0xFFAA0000;
 				else trackColor = trackHovered ? 0xFF55FF55 : 0xFF00AA00;
-				graphics.fill(trackBtnX, entryY + 2, trackBtnX + trackBtnW, entryY + 16, trackColor);
-				graphics.drawCenteredString(this.font, trackText, trackBtnX + trackBtnW / 2, entryY + 5, 0xFFFFFF);
+				int buttonY = entryY + 4;
+				graphics.fill(trackBtnX, buttonY, trackBtnX + trackBtnW, buttonY + 14, trackColor);
+				graphics.drawCenteredString(this.font, trackText, trackBtnX + trackBtnW / 2, buttonY + 3, 0xFFFFFF);
 
 				if (hovered && mouseX < trackBtnX) {
 					List<Component> tooltip = new ArrayList<>();
@@ -265,8 +266,9 @@ public class LocationListScreen extends Screen {
 				int entryY = listY + i * LIST_ENTRY_HEIGHT;
 
 				int trackBtnX = listX + listWidth - 50;
+				int buttonY = entryY + 4;
 				if (mouseX >= trackBtnX && mouseX <= trackBtnX + 40
-						&& mouseY >= entryY + 2 && mouseY <= entryY + 16) {
+				        && mouseY >= buttonY && mouseY <= buttonY + 14) {
 					Location tracked = ClientLocationData.getTrackedLocation();
 					if (tracked != null && tracked.getId().equals(loc.getId()))
 						ClientLocationData.clearTracking();

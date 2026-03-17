@@ -210,8 +210,8 @@ public class LocationManager {
 	private void createDefaults() {
 		categories.clear();
 		categories.add(new LocationCategory("market", "Market", "minecraft:emerald"));
-		categories.add(new LocationCategory("farm", "Farm", "minecraft:wheat"));
-		categories.add(new LocationCategory("base", "Base", "minecraft:oak_door"));
-		categories.add(new LocationCategory("poi", "POI", "minecraft:spyglass"));
+		categories.add(new LocationCategory("c1", "Category 2", "minecraft:wheat"));
+		categories.add(new LocationCategory("c2", "Category 3", "minecraft:oak_door"));
+		categories.add(new LocationCategory("c4", "Category 4", "minecraft:spyglass"));
 	}
 }

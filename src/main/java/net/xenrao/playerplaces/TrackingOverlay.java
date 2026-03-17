@@ -3,6 +3,7 @@ package net.xenrao.playerplaces;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
@@ -72,11 +73,13 @@ public class TrackingOverlay {
 				String line2 = "You have arrived!";
 				int remainSec = (int) ((ARRIVED_DISPLAY_MS - elapsed) / 1000) + 1;
 				String line3 = "Stopping in " + remainSec + "s";
+
 				drawCenteredStringWithShadow(graphics, mc, line1, screenWidth / 2, y - 12, 0x55FF55);
 				drawCenteredStringWithShadow(graphics, mc, line2, screenWidth / 2, y, 0x55FF55);
 				drawCenteredStringWithShadow(graphics, mc, line3, screenWidth / 2, y + 12, 0x888888);
 			} else {
 				arrivedTimestamp = -1;
+
 				String direction = getDirection(player.getYRot(), dx, dz);
 				String distStr = String.valueOf((int) distance);
 
@@ -90,21 +93,30 @@ public class TrackingOverlay {
 			}
 		}
 
-		drawCenteredStringWithShadow(graphics, mc, "[H to manage]", screenWidth / 2, y + 24, 0x555555);
+		String keyName = getManageKeyName();
+		drawCenteredStringWithShadow(graphics, mc, "Press " + keyName + " to manage", screenWidth / 2, y + 24, 0x555555);
+	}
+
+	private static String getManageKeyName() {
+		try {
+			return PlacesKeyBindings.OPEN_GUI.getTranslatedKeyMessage().getString();
+		} catch (Exception e) {
+			return "H";
+		}
 	}
 
 	private static String getDirection(float playerYaw, double dx, double dz) {
 		double targetAngle = Math.toDegrees(Math.atan2(-dx, dz));
 		double relativeAngle = Mth.wrapDegrees(targetAngle - playerYaw);
 
-		if (relativeAngle >= -22.5 && relativeAngle < 22.5) return "\u2191 Ahead";
-		if (relativeAngle >= 22.5 && relativeAngle < 67.5) return "\u2197 Front-Right";
-		if (relativeAngle >= 67.5 && relativeAngle < 112.5) return "\u2192 Right";
-		if (relativeAngle >= 112.5 && relativeAngle < 157.5) return "\u2198 Back-Right";
-		if (relativeAngle >= -67.5 && relativeAngle < -22.5) return "\u2196 Front-Left";
-		if (relativeAngle >= -112.5 && relativeAngle < -67.5) return "\u2190 Left";
-		if (relativeAngle >= -157.5 && relativeAngle < -112.5) return "\u2199 Back-Left";
-		return "\u2193 Behind";
+		if (relativeAngle >= -22.5 && relativeAngle < 22.5) return "↑ Ahead";
+		if (relativeAngle >= 22.5 && relativeAngle < 67.5) return "↗ Front-Right";
+		if (relativeAngle >= 67.5 && relativeAngle < 112.5) return "→ Right";
+		if (relativeAngle >= 112.5 && relativeAngle < 157.5) return "↘ Back-Right";
+		if (relativeAngle >= -67.5 && relativeAngle < -22.5) return "↖ Front-Left";
+		if (relativeAngle >= -112.5 && relativeAngle < -67.5) return "← Left";
+		if (relativeAngle >= -157.5 && relativeAngle < -112.5) return "↙ Back-Left";
+		return "↓ Behind";
 	}
 
 	private static String formatDimension(String dim) {

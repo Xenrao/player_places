@@ -88,7 +88,7 @@ public class PlayerEditScreen extends Screen {
 		int catY = startY + 68;
 		for (int i = 0; i < cats.size(); i++) {
 			if (cats.get(i).getId().equals(selectedCategory)) {
-				graphics.drawString(this.font, ">>", centerX - 75, catY + i * 22 + 4, 0x55FF55);
+				graphics.drawString(this.font, ">>", centerX - 75, catY + i * 22 + 5, 0x55FF55);
 			}
 		}
 

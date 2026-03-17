@@ -81,7 +81,7 @@ public class AdminEditScreen extends Screen {
 			this.addRenderableWidget(Button.builder(
 					Component.literal(cat.getName()),
 					btn -> { selectedCategory = catId; rebuildWidgets(); }
-			).bounds(rightCol + 10, catY + i * 20, 110, 16).build());
+			).bounds(rightCol + 10, catY + i * 20 + 4, 110, 16).build());
 		}
 
 		// Save
@@ -136,7 +136,7 @@ public class AdminEditScreen extends Screen {
 		int catY = y + 60;
 		for (int i = 0; i < cats.size(); i++) {
 			if (cats.get(i).getId().equals(selectedCategory)) {
-				graphics.drawString(this.font, ">>", rightCol + 2, catY + i * 20 + 4, 0x55FF55);
+				graphics.drawString(this.font, ">>", rightCol + 2, catY + i * 20 + 8, 0x55FF55);
 			}
 		}
 

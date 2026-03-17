@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class AdminScreen extends Screen {
 	private final Screen parent;
-	private int currentTab = 0; // 0=Locations, 1=Categories, 2=Settings
+	private int currentTab = 0;
 	private int scrollOffset = 0;
 	private EditBox searchBox;
 	private EditBox maxLocationsBox;
@@ -25,6 +25,9 @@ public class AdminScreen extends Screen {
 	private static final int ENTRY_HEIGHT = 22;
 	private static final int VISIBLE_COUNT = 6;
 
+	private int lastDataVersion = -1;
+	private String savedSearchText = "";
+
 	public AdminScreen(Screen parent) {
 		super(Component.literal("Admin Panel"));
 		this.parent = parent;
@@ -34,7 +37,6 @@ public class AdminScreen extends Screen {
 	protected void init() {
 		int centerX = this.width / 2;
 
-		// Tab buttons
 		this.addRenderableWidget(Button.builder(Component.literal("Locations"), btn -> {
 			currentTab = 0;
 			scrollOffset = 0;
@@ -61,7 +63,6 @@ public class AdminScreen extends Screen {
 			initSettingsTab(centerX);
 		}
 
-		// Back button
 		this.addRenderableWidget(Button.builder(
 				Component.literal("Back"),
 				btn -> Minecraft.getInstance().setScreen(parent)
@@ -71,6 +72,7 @@ public class AdminScreen extends Screen {
 	private void initLocationsTab(int centerX) {
 		searchBox = new EditBox(this.font, centerX - 100, 48, 200, 16, Component.literal("Search player..."));
 		searchBox.setMaxLength(32);
+		searchBox.setValue(savedSearchText);
 		searchBox.setResponder(text -> {
 			scrollOffset = 0;
 			updateFilteredLocations();
@@ -106,8 +108,8 @@ public class AdminScreen extends Screen {
 	}
 
 	private void initSettingsTab(int centerX) {
-		int inputY = 70;
-		maxLocationsBox = new EditBox(this.font, centerX - 20, inputY, 40, 16,
+		int inputY = 80;
+		maxLocationsBox = new EditBox(this.font, centerX + 10, inputY, 40, 16,
 				Component.literal(String.valueOf(ClientLocationData.getMaxLocationsPerPlayer())));
 		maxLocationsBox.setMaxLength(3);
 		maxLocationsBox.setValue(String.valueOf(ClientLocationData.getMaxLocationsPerPlayer()));
@@ -117,7 +119,7 @@ public class AdminScreen extends Screen {
 			String val = maxLocationsBox.getValue().trim();
 			PlayerPlacesMod.PACKET_HANDLER.sendToServer(
 					new AdminActionPacket(AdminActionPacket.ACTION_SET_MAX_LOCATIONS, val, "", ""));
-		}).bounds(centerX + 30, inputY, 40, 16).build());
+		}).bounds(centerX + 56, inputY, 40, 16).build());
 	}
 
 	private void updateFilteredLocations() {
@@ -133,23 +135,22 @@ public class AdminScreen extends Screen {
 	}
 
 	@Override
+	public void tick() {
+		super.tick();
+		if (searchBox != null) savedSearchText = searchBox.getValue();
+		int ver = ClientLocationData.getDataVersion();
+		if (lastDataVersion == -1) { lastDataVersion = ver; return; }
+		if (lastDataVersion != ver) { lastDataVersion = ver; rebuildWidgets(); }
+	}
+
+	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 		this.renderBackground(graphics);
 		graphics.drawCenteredString(this.font, "Admin Panel", this.width / 2, 8, 0xFFAA00);
-
-		// Tab indicator
-		String[] tabNames = {"Locations", "Categories", "Settings"};
-		int centerX = this.width / 2;
-
 		super.render(graphics, mouseX, mouseY, partialTick);
-
-		if (currentTab == 0) {
-			renderLocationsTab(graphics, mouseX, mouseY);
-		} else if (currentTab == 1) {
-			renderCategoriesTab(graphics, mouseX, mouseY);
-		} else {
-			renderSettingsTab(graphics, mouseX, mouseY);
-		}
+		if (currentTab == 0) renderLocationsTab(graphics, mouseX, mouseY);
+		else if (currentTab == 1) renderCategoriesTab(graphics, mouseX, mouseY);
+		else renderSettingsTab(graphics, mouseX, mouseY);
 	}
 
 	private void renderLocationsTab(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -168,7 +169,6 @@ public class AdminScreen extends Screen {
 		for (int i = 0; i < VISIBLE_COUNT; i++) {
 			int index = i + scrollOffset;
 			if (index >= filteredLocations.size()) break;
-
 			Location loc = filteredLocations.get(index);
 			int entryY = listY + i * ENTRY_HEIGHT;
 
@@ -185,27 +185,23 @@ public class AdminScreen extends Screen {
 			String catName = cat != null ? cat.getName() : "?";
 			graphics.drawString(this.font, "(" + catName + ")", listX + 4, entryY + 12, 0x888888);
 
-			// Edit button
 			int editX = listX + listWidth - 70;
-			boolean editHov = mouseX >= editX && mouseX <= editX + 30
-					&& mouseY >= entryY + 2 && mouseY <= entryY + 16;
+			boolean editHov = mouseX >= editX && mouseX <= editX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16;
 			graphics.fill(editX, entryY + 2, editX + 30, entryY + 16, editHov ? 0xFF5555FF : 0xFF3333AA);
 			graphics.drawCenteredString(this.font, "Edit", editX + 15, entryY + 5, 0xFFFFFF);
 
-			// Delete button
 			int delX = listX + listWidth - 34;
-			boolean delHov = mouseX >= delX && mouseX <= delX + 30
-					&& mouseY >= entryY + 2 && mouseY <= entryY + 16;
+			boolean delHov = mouseX >= delX && mouseX <= delX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16;
 			graphics.fill(delX, entryY + 2, delX + 30, entryY + 16, delHov ? 0xFFFF3333 : 0xFFAA0000);
 			graphics.drawCenteredString(this.font, "Del", delX + 15, entryY + 5, 0xFFFFFF);
 
-			// Hover tooltip
 			if (hovered && mouseX < editX) {
 				List<Component> tooltip = new ArrayList<>();
-				tooltip.add(Component.literal("§e" + loc.getName()));
-				tooltip.add(Component.literal("§7X:" + loc.getX() + " Y:" + loc.getY() + " Z:" + loc.getZ()));
-				tooltip.add(Component.literal("§7Dim: " + loc.getDimension()));
-				tooltip.add(Component.literal("§7Owner: " + loc.getOwnerName()));
+				tooltip.add(Component.literal("\u00A7e" + loc.getName()));
+				if (!loc.getDescription().isEmpty()) tooltip.add(Component.literal("\u00A7f" + loc.getDescription()));
+				tooltip.add(Component.literal("\u00A77X:" + loc.getX() + " Y:" + loc.getY() + " Z:" + loc.getZ()));
+				tooltip.add(Component.literal("\u00A77Dim: " + loc.getDimension()));
+				tooltip.add(Component.literal("\u00A77Owner: " + loc.getOwnerName()));
 				graphics.renderTooltip(this.font, tooltip, Optional.empty(), mouseX, mouseY);
 			}
 		}
@@ -215,30 +211,24 @@ public class AdminScreen extends Screen {
 		int listX = this.width / 2 - 120;
 		int listY = 55;
 		int listWidth = 240;
-
 		List<LocationCategory> cats = ClientLocationData.getCategories();
 		for (int i = 0; i < cats.size(); i++) {
 			LocationCategory cat = cats.get(i);
 			int entryY = listY + i * ENTRY_HEIGHT;
-
 			graphics.fill(listX, entryY, listX + listWidth, entryY + ENTRY_HEIGHT - 2, 0x40000000);
 			graphics.drawString(this.font, cat.getName() + " (" + cat.getId() + ")", listX + 4, entryY + 3, 0xFFFFFF);
 			graphics.drawString(this.font, "Icon: " + cat.getIcon(), listX + 4, entryY + 12, 0x888888);
-
-			// Delete category button
 			int delX = listX + listWidth - 30;
-			boolean delHov = mouseX >= delX && mouseX <= delX + 26
-					&& mouseY >= entryY + 2 && mouseY <= entryY + 16;
+			boolean delHov = mouseX >= delX && mouseX <= delX + 26 && mouseY >= entryY + 2 && mouseY <= entryY + 16;
 			graphics.fill(delX, entryY + 2, delX + 26, entryY + 16, delHov ? 0xFFFF3333 : 0xFFAA0000);
 			graphics.drawCenteredString(this.font, "Del", delX + 13, entryY + 5, 0xFFFFFF);
 		}
-
 		graphics.drawString(this.font, "Add New Category:", this.width / 2 - 120, this.height - 96, 0xAAAAAA);
 	}
 
 	private void renderSettingsTab(GuiGraphics graphics, int mouseX, int mouseY) {
 		int centerX = this.width / 2;
-		graphics.drawString(this.font, "Max locations per player:", centerX - 100, 74, 0xFFFFFF);
+		graphics.drawString(this.font, "Max locations per player:", centerX - 120, 84, 0xFFFFFF);
 	}
 
 	@Override
@@ -247,52 +237,39 @@ public class AdminScreen extends Screen {
 			int listX = this.width / 2 - 140;
 			int listY = 72;
 			int listWidth = 280;
-
 			for (int i = 0; i < VISIBLE_COUNT; i++) {
 				int index = i + scrollOffset;
 				if (index >= filteredLocations.size()) break;
-
 				Location loc = filteredLocations.get(index);
 				int entryY = listY + i * ENTRY_HEIGHT;
-
-				// Edit click
 				int editX = listX + listWidth - 70;
-				if (mouseX >= editX && mouseX <= editX + 30
-						&& mouseY >= entryY + 2 && mouseY <= entryY + 16) {
+				if (mouseX >= editX && mouseX <= editX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16) {
 					Minecraft.getInstance().setScreen(new AdminEditScreen(this, loc));
 					return true;
 				}
-
-				// Delete click
 				int delX = listX + listWidth - 34;
-				if (mouseX >= delX && mouseX <= delX + 30
-						&& mouseY >= entryY + 2 && mouseY <= entryY + 16) {
+				if (mouseX >= delX && mouseX <= delX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16) {
 					PlayerPlacesMod.PACKET_HANDLER.sendToServer(
 							new AdminActionPacket(AdminActionPacket.ACTION_DELETE_LOCATION, loc.getId(), "", ""));
 					return true;
 				}
 			}
 		}
-
 		if (button == 0 && currentTab == 1) {
 			int listX = this.width / 2 - 120;
 			int listY = 55;
 			int listWidth = 240;
 			List<LocationCategory> cats = ClientLocationData.getCategories();
-
 			for (int i = 0; i < cats.size(); i++) {
-				LocationCategory cat = cats.get(i);
 				int entryY = listY + i * ENTRY_HEIGHT;
 				int delX = listX + listWidth - 30;
-				if (mouseX >= delX && mouseX <= delX + 26
-						&& mouseY >= entryY + 2 && mouseY <= entryY + 16) {
+				if (mouseX >= delX && mouseX <= delX + 26 && mouseY >= entryY + 2 && mouseY <= entryY + 16) {
 					PlayerPlacesMod.PACKET_HANDLER.sendToServer(
-							new AdminActionPacket(AdminActionPacket.ACTION_REMOVE_CATEGORY, cat.getId(), "", ""));
+							new AdminActionPacket(AdminActionPacket.ACTION_REMOVE_CATEGORY, cats.get(i).getId(), "", ""));
 					return true;
 				}
 			}
 		}
-
 		return super.mouseClicked(mouseX, mouseY, button);
 	}
 
@@ -307,7 +284,5 @@ public class AdminScreen extends Screen {
 	}
 
 	@Override
-	public boolean isPauseScreen() {
-		return false;
-	}
+	public boolean isPauseScreen() { return false; }
 }

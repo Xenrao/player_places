@@ -1,7 +1,12 @@
 package net.xenrao.playerplaces;
 
+import com.mojang.brigadier.CommandDispatcher;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -29,6 +34,26 @@ public class PlacesEvents {
 		if (event.getEntity() instanceof ServerPlayer serverPlayer) {
 			syncAllToPlayer(serverPlayer);
 		}
+	}
+
+	@SubscribeEvent
+	public static void onRegisterCommands(RegisterCommandsEvent event) {
+		CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+		dispatcher.register(Commands.literal("playerplaces")
+				.then(Commands.literal("reload")
+						.requires(src -> src.hasPermission(2))
+						.executes(ctx -> {
+							LocationManager manager = LocationManager.get();
+							if (manager != null) {
+								manager.reload();
+								MinecraftServer server = ctx.getSource().getServer();
+								syncAllToEveryone(server);
+								ctx.getSource().sendSuccess(() -> Component.literal("\u00A7aPlayerPlaces data reloaded."), true);
+							} else {
+								ctx.getSource().sendFailure(Component.literal("\u00A7cLocationManager not initialized!"));
+							}
+							return 1;
+						})));
 	}
 
 	public static void syncAllToPlayer(ServerPlayer player) {

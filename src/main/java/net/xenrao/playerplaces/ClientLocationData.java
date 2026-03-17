@@ -9,12 +9,14 @@ public class ClientLocationData {
 	private static List<Location> locations = new ArrayList<>();
 	private static List<LocationCategory> categories = new ArrayList<>();
 	private static int maxLocationsPerPlayer = 5;
+	private static int dataVersion = 0;
 
 	@Nullable
 	private static Location trackedLocation = null;
 
 	public static void setLocations(List<Location> locs) {
 		locations = new ArrayList<>(locs);
+		dataVersion++;
 	}
 
 	public static List<Location> getLocations() {
@@ -23,6 +25,7 @@ public class ClientLocationData {
 
 	public static void setCategories(List<LocationCategory> cats) {
 		categories = new ArrayList<>(cats);
+		dataVersion++;
 	}
 
 	public static List<LocationCategory> getCategories() {
@@ -31,10 +34,15 @@ public class ClientLocationData {
 
 	public static void setMaxLocationsPerPlayer(int max) {
 		maxLocationsPerPlayer = max;
+		dataVersion++;
 	}
 
 	public static int getMaxLocationsPerPlayer() {
 		return maxLocationsPerPlayer;
+	}
+
+	public static int getDataVersion() {
+		return dataVersion;
 	}
 
 	public static void setTrackedLocation(@Nullable Location loc) {

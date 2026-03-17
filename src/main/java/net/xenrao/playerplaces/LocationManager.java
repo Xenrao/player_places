@@ -22,7 +22,8 @@ public class LocationManager {
 
 	private LocationManager(MinecraftServer server) {
 		Path worldDir = server.getWorldPath(LevelResource.ROOT);
-		this.dataFile = worldDir.resolve("playerplaces_data.json");
+		this.dataFile = worldDir.resolve("playerplaces").resolve("places.json");
+		PlayerPlacesMod.LOGGER.info("PlayerPlaces data file: {}", dataFile.toAbsolutePath());
 		load();
 	}
 
@@ -39,6 +40,10 @@ public class LocationManager {
 
 	public static LocationManager get() {
 		return instance;
+	}
+
+	public void reload() {
+		load();
 	}
 
 	// --- Locations CRUD ---
@@ -87,27 +92,32 @@ public class LocationManager {
 				.collect(Collectors.toList());
 	}
 
-	public List<Location> getLocationsByCategory(String categoryId) {
-		return locations.stream()
-				.filter(l -> l.getCategoryId().equals(categoryId))
-				.collect(Collectors.toList());
-	}
-
-	public List<Location> getLocationsByDimension(String dimension) {
-		return locations.stream()
-				.filter(l -> l.getDimension().equals(dimension))
-				.collect(Collectors.toList());
-	}
-
-	public void updateLocation(String locationId, String newName, String newCategoryId) {
+	public void updateLocation(String locationId, String newName, String newDescription, String newCategoryId) {
 		Location loc = getLocation(locationId);
 		if (loc != null) {
 			if (newName != null)
 				loc.setName(newName);
+			if (newDescription != null)
+				loc.setDescription(newDescription);
 			if (newCategoryId != null)
 				loc.setCategoryId(newCategoryId);
 			save();
 		}
+	}
+
+	public boolean updateLocationByPlayer(String locationId, UUID playerUUID, String newName, String newDescription, String newCategoryId) {
+		Location loc = getLocation(locationId);
+		if (loc != null && loc.getOwnerUUID().equals(playerUUID)) {
+			if (newName != null)
+				loc.setName(newName);
+			if (newDescription != null)
+				loc.setDescription(newDescription);
+			if (newCategoryId != null)
+				loc.setCategoryId(newCategoryId);
+			save();
+			return true;
+		}
+		return false;
 	}
 
 	// --- Categories CRUD ---
@@ -171,6 +181,10 @@ public class LocationManager {
 			PlayerPlacesMod.LOGGER.error("Failed to save PlayerPlaces data", e);
 		}
 	}
+	
+	public void forceSave() {
+	    save();
+	}
 
 	private void load() {
 		if (!Files.exists(dataFile)) {
@@ -209,7 +223,7 @@ public class LocationManager {
 		categories.clear();
 		categories.add(new LocationCategory("market", "Market", "minecraft:emerald"));
 		categories.add(new LocationCategory("farm", "Farm", "minecraft:wheat"));
-		categories.add(new LocationCategory("base", "Üs", "minecraft:oak_door"));
-		categories.add(new LocationCategory("poi", "İlgi Noktası", "minecraft:spyglass"));
+		categories.add(new LocationCategory("base", "Base", "minecraft:oak_door"));
+		categories.add(new LocationCategory("poi", "POI", "minecraft:spyglass"));
 	}
 }

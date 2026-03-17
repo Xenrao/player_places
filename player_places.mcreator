@@ -203,6 +203,42 @@
           "src/main/java/net/xenrao/playerplaces/TrackingOverlay.java"
         ]
       }
+    },
+    {
+      "name": "MyLocationsScreen",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "my_locations_screen",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/MyLocationsScreen.java"
+        ]
+      }
+    },
+    {
+      "name": "PlayerEditScreen",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "player_edit_screen",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/PlayerEditScreen.java"
+        ]
+      }
+    },
+    {
+      "name": "EditLocationPacket",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "edit_location_packet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/EditLocationPacket.java"
+        ]
+      }
     }
   ],
   "variable_elements": [],

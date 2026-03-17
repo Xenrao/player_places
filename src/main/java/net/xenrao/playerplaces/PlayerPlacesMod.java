@@ -43,6 +43,7 @@ public class PlayerPlacesMod {
 		PlayerPlacesMod.addNetworkMessage(AddLocationPacket.class, AddLocationPacket::encode, AddLocationPacket::decode, AddLocationPacket::handle);
 		PlayerPlacesMod.addNetworkMessage(RemoveLocationPacket.class, RemoveLocationPacket::encode, RemoveLocationPacket::decode, RemoveLocationPacket::handle);
 		PlayerPlacesMod.addNetworkMessage(AdminActionPacket.class, AdminActionPacket::encode, AdminActionPacket::decode, AdminActionPacket::handle);
+		PlayerPlacesMod.addNetworkMessage(EditLocationPacket.class, EditLocationPacket::encode, EditLocationPacket::decode, EditLocationPacket::handle);
 		// End of user code block mod init
 	}
 

@@ -34,10 +34,9 @@ public class TrackingOverlay {
 		String playerDim = player.level().dimension().location().toString();
 		boolean sameDimension = playerDim.equals(tracked.getDimension());
 
-		int y = screenHeight - 55;
+		int y = screenHeight - 95;
 
 		if (!sameDimension) {
-			// Different dimension
 			String dimName = formatDimension(tracked.getDimension());
 			String line1 = ">> " + tracked.getName() + " <<";
 			String line2 = "Go to: " + dimName;
@@ -47,7 +46,6 @@ public class TrackingOverlay {
 			drawCenteredStringWithShadow(graphics, mc, line2, screenWidth / 2, y, 0xFF5555);
 			drawCenteredStringWithShadow(graphics, mc, line3, screenWidth / 2, y + 12, 0xAAAAAA);
 		} else {
-			// Same dimension - show direction and distance
 			double dx = tracked.getX() - player.getX();
 			double dz = tracked.getZ() - player.getZ();
 			double distance = Math.sqrt(dx * dx + dz * dz);
@@ -71,24 +69,21 @@ public class TrackingOverlay {
 			}
 		}
 
-		// Stop tracking hint
 		drawCenteredStringWithShadow(graphics, mc, "[H to manage]", screenWidth / 2, y + 24, 0x555555);
 	}
 
 	private static String getDirection(float playerYaw, double dx, double dz) {
-		// Angle from player to target in degrees
 		double targetAngle = Math.toDegrees(Math.atan2(-dx, dz));
 		double relativeAngle = Mth.wrapDegrees(targetAngle - playerYaw);
 
-		// Convert to compass + arrow
-		if (relativeAngle >= -22.5 && relativeAngle < 22.5) return "↑ Ahead";
-		if (relativeAngle >= 22.5 && relativeAngle < 67.5) return "↗ Front-Left";
-		if (relativeAngle >= 67.5 && relativeAngle < 112.5) return "← Left";
-		if (relativeAngle >= 112.5 && relativeAngle < 157.5) return "↙ Back-Left";
-		if (relativeAngle >= -67.5 && relativeAngle < -22.5) return "↘ Front-Right";
-		if (relativeAngle >= -112.5 && relativeAngle < -67.5) return "→ Right";
-		if (relativeAngle >= -157.5 && relativeAngle < -112.5) return "↖ Back-Right";
-		return "↓ Behind";
+		if (relativeAngle >= -22.5 && relativeAngle < 22.5) return "\u2191 Ahead";
+		if (relativeAngle >= 22.5 && relativeAngle < 67.5) return "\u2197 Front-Right";
+		if (relativeAngle >= 67.5 && relativeAngle < 112.5) return "\u2192 Right";
+		if (relativeAngle >= 112.5 && relativeAngle < 157.5) return "\u2198 Back-Right";
+		if (relativeAngle >= -67.5 && relativeAngle < -22.5) return "\u2196 Front-Left";
+		if (relativeAngle >= -112.5 && relativeAngle < -67.5) return "\u2190 Left";
+		if (relativeAngle >= -157.5 && relativeAngle < -112.5) return "\u2199 Back-Left";
+		return "\u2193 Behind";
 	}
 
 	private static String formatDimension(String dim) {
@@ -100,7 +95,6 @@ public class TrackingOverlay {
 
 	private static void drawCenteredStringWithShadow(GuiGraphics graphics, Minecraft mc, String text, int x, int y, int color) {
 		int width = mc.font.width(text);
-		// Dark background for readability
 		graphics.fill(x - width / 2 - 3, y - 2, x + width / 2 + 3, y + 10, 0x80000000);
 		graphics.drawCenteredString(mc.font, text, x, y, color);
 	}

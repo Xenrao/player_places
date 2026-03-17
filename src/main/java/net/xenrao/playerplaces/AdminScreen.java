@@ -242,9 +242,9 @@ public class AdminScreen extends Screen {
 		int y = 60;
 		int rowH = 28;
 
-		graphics.drawString(this.font, "Max locations per player:", leftX, y + 4, 0xFFFFFF);
-		graphics.drawString(this.font, "Max name length:", leftX, y + rowH + 4, 0xFFFFFF);
-		graphics.drawString(this.font, "Max description length:", leftX, y + rowH * 2 + 4, 0xFFFFFF);
+		graphics.drawString(this.font, "Max locations per player:", leftX -15, y + 4, 0xFFFFFF);
+		graphics.drawString(this.font, "Max name length:", leftX-15, y + rowH + 4, 0xFFFFFF);
+		graphics.drawString(this.font, "Max description length:", leftX-15, y + rowH * 2 + 4, 0xFFFFFF);
 	}
 
 	@Override

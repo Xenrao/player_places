@@ -6,9 +6,11 @@ license="Not specified"
 modId="player_places"
 version="1.0.0"
 displayName="Player Places"
-displayURL="https://mcreator.net"
-credits="Created using mod maker MCreator - https://mcreator.net/about"
-authors="MCreator"
+displayURL="https://github.com/Xenrao/player_places"
+logoFile="logo.png"
+credits="XenraO"
+authors="XenraO"
+description="a Minecraft mod for people share locations publicly!"
 
 # Start of user code block mod configuration
 # End of user code block mod configuration

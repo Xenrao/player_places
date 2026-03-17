@@ -134,7 +134,7 @@ public class LocationListScreen extends Screen {
 
 		// Add location button
 		long myCount = ClientLocationData.getLocations().stream()
-				.filter(l -> mc.player != null && l.getOwnerUUID().equals(mc.player.getUUID()))
+				.filter(l -> mc.player != null && l.getOwnerName().equalsIgnoreCase(mc.player.getGameProfile().getName()))
 				.count();
 		int max = ClientLocationData.getMaxLocationsPerPlayer();
 

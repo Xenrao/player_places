@@ -2,14 +2,9 @@ package net.xenrao.playerplaces;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
-import com.mojang.authlib.GameProfile;
-
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 public class AdminActionPacket {
@@ -64,7 +59,8 @@ public class AdminActionPacket {
 					player.sendSystemMessage(Component.literal("\u00A7aLocation edited."));
 				}
 				case ACTION_DELETE_LOCATION -> {
-					manager.removeLocation(msg.param1, player.getUUID(), true);
+					String playerName = player.getGameProfile().getName();
+					manager.removeLocation(msg.param1, playerName, true);
 					player.sendSystemMessage(Component.literal("\u00A7aLocation deleted."));
 				}
 				case ACTION_ADD_CATEGORY -> {
@@ -91,7 +87,6 @@ public class AdminActionPacket {
 					}
 				}
 				case ACTION_SET_MAX_LOCATIONS -> {
-					// param1 = key, param2 = value
 					String key = msg.param1;
 					String value = msg.param2;
 					try {
@@ -144,30 +139,7 @@ public class AdminActionPacket {
 						if (!newName.isEmpty()) loc.setName(newName);
 						loc.setDescription(newDesc);
 						if (!newCat.isEmpty() && manager.getCategory(newCat) != null) loc.setCategoryId(newCat);
-
-						// Owner name change - resolve UUID from server
-						if (!newOwnerName.isEmpty() && !newOwnerName.equals(loc.getOwnerName())) {
-							MinecraftServer server = player.getServer();
-							if (server != null) {
-								// Try online player first
-								ServerPlayer targetPlayer = server.getPlayerList().getPlayerByName(newOwnerName);
-								if (targetPlayer != null) {
-									loc.setOwnerName(targetPlayer.getGameProfile().getName());
-									loc.setOwnerUUID(targetPlayer.getUUID());
-								} else {
-									// Try offline lookup
-									Optional<GameProfile> profile = server.getProfileCache().get(newOwnerName);
-									if (profile.isPresent()) {
-										loc.setOwnerName(profile.get().getName());
-										loc.setOwnerUUID(profile.get().getId());
-									} else {
-										loc.setOwnerName(newOwnerName);
-										player.sendSystemMessage(Component.literal("\u00A7eWarning: Player '" + newOwnerName + "' not found. UUID unchanged."));
-									}
-								}
-							}
-						}
-
+						if (!newOwnerName.isEmpty()) loc.setOwnerName(newOwnerName);
 						if (!newX.isEmpty()) loc.setX(Integer.parseInt(newX));
 						if (!newY.isEmpty()) loc.setY(Integer.parseInt(newY));
 						if (!newZ.isEmpty()) loc.setZ(Integer.parseInt(newZ));

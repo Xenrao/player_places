@@ -32,36 +32,32 @@ public class AddLocationPacket {
 	public static void handle(AddLocationPacket msg, Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			ServerPlayer player = ctx.get().getSender();
-			if (player == null)
-				return;
+			if (player == null) return;
 			LocationManager manager = LocationManager.get();
-			if (manager == null)
-				return;
+			if (manager == null) return;
 			if (msg.name == null || msg.name.trim().isEmpty()) {
 				player.sendSystemMessage(Component.literal("\u00A7cLocation name cannot be empty!"));
 				return;
 			}
-			if (msg.name.length() > manager.getMaxNameLength()) {
-			    player.sendSystemMessage(Component.literal("\u00A7cName too long! Max: " + manager.getMaxNameLength()));
-			    return;
-			}
-			String desc = msg.description != null ? msg.description.trim() : "";
-			if (desc.length() > manager.getMaxDescLength()) {
-			    desc = desc.substring(0, manager.getMaxDescLength());
+			if (msg.name.trim().length() > manager.getMaxNameLength()) {
+				player.sendSystemMessage(Component.literal("\u00A7cName too long! Max: " + manager.getMaxNameLength()));
+				return;
 			}
 			if (manager.getCategory(msg.categoryId) == null) {
 				player.sendSystemMessage(Component.literal("\u00A7cInvalid category!"));
 				return;
 			}
 			String dimension = player.level().dimension().location().toString();
+			String desc = msg.description != null ? msg.description.trim() : "";
+			if (desc.length() > manager.getMaxDescLength()) desc = desc.substring(0, manager.getMaxDescLength());
 
+			String playerName = player.getGameProfile().getName();
 			Location location = new Location(
 					UUID.randomUUID().toString(),
 					msg.name.trim(),
 					desc,
 					msg.categoryId,
-					player.getUUID(),
-					player.getGameProfile().getName(),
+					playerName,
 					player.blockPosition().getX(),
 					player.blockPosition().getY(),
 					player.blockPosition().getZ(),

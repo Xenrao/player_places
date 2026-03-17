@@ -5,14 +5,12 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 
 public class Location {
 	private final String id;
 	private String name;
 	private String description;
 	private String categoryId;
-	private UUID ownerUUID;
 	private String ownerName;
 	private int x;
 	private int y;
@@ -20,12 +18,11 @@ public class Location {
 	private String dimension;
 	private final long createdAt;
 
-	public Location(String id, String name, String description, String categoryId, UUID ownerUUID, String ownerName, int x, int y, int z, String dimension, long createdAt) {
+	public Location(String id, String name, String description, String categoryId, String ownerName, int x, int y, int z, String dimension, long createdAt) {
 		this.id = id;
 		this.name = name;
 		this.description = description != null ? description : "";
 		this.categoryId = categoryId;
-		this.ownerUUID = ownerUUID;
 		this.ownerName = ownerName;
 		this.x = x;
 		this.y = y;
@@ -40,7 +37,6 @@ public class Location {
 		obj.addProperty("name", name);
 		obj.addProperty("description", description);
 		obj.addProperty("categoryId", categoryId);
-		obj.addProperty("ownerUUID", ownerUUID.toString());
 		obj.addProperty("ownerName", ownerName);
 		obj.addProperty("x", x);
 		obj.addProperty("y", y);
@@ -59,7 +55,6 @@ public class Location {
 				obj.get("name").getAsString(),
 				desc,
 				obj.get("categoryId").getAsString(),
-				UUID.fromString(obj.get("ownerUUID").getAsString()),
 				obj.get("ownerName").getAsString(),
 				obj.get("x").getAsInt(),
 				obj.get("y").getAsInt(),
@@ -74,7 +69,6 @@ public class Location {
 		buf.writeUtf(name);
 		buf.writeUtf(description);
 		buf.writeUtf(categoryId);
-		buf.writeUUID(ownerUUID);
 		buf.writeUtf(ownerName);
 		buf.writeInt(x);
 		buf.writeInt(y);
@@ -89,7 +83,6 @@ public class Location {
 				buf.readUtf(),
 				buf.readUtf(),
 				buf.readUtf(),
-				buf.readUUID(),
 				buf.readUtf(),
 				buf.readInt(),
 				buf.readInt(),
@@ -106,8 +99,6 @@ public class Location {
 	public void setDescription(String description) { this.description = description != null ? description : ""; }
 	public String getCategoryId() { return categoryId; }
 	public void setCategoryId(String categoryId) { this.categoryId = categoryId; }
-	public UUID getOwnerUUID() { return ownerUUID; }
-	public void setOwnerUUID(UUID ownerUUID) { this.ownerUUID = ownerUUID; }
 	public String getOwnerName() { return ownerName; }
 	public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
 	public int getX() { return x; }

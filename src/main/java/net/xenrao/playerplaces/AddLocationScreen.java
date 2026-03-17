@@ -14,6 +14,8 @@ public class AddLocationScreen extends Screen {
 	private EditBox nameBox;
 	private EditBox descBox;
 	private String selectedCategory = null;
+	private String savedName = "";
+	private String savedDesc = "";
 
 	public AddLocationScreen(Screen parent) {
 		super(Component.literal("Add Location"));
@@ -26,37 +28,36 @@ public class AddLocationScreen extends Screen {
 		int startY = 45;
 		Minecraft mc = Minecraft.getInstance();
 
-		// Name input
 		nameBox = new EditBox(this.font, centerX - 80, startY, 160, 18, Component.literal("Name"));
-		nameBox.setMaxLength(32);
+		nameBox.setMaxLength(ClientLocationData.getMaxNameLength());
+		nameBox.setValue(savedName);
 		this.addRenderableWidget(nameBox);
 
-		// Description input
 		descBox = new EditBox(this.font, centerX - 80, startY + 30, 160, 18, Component.literal("Description"));
-		descBox.setMaxLength(64);
+		descBox.setMaxLength(ClientLocationData.getMaxDescLength());
+		descBox.setValue(savedDesc);
 		this.addRenderableWidget(descBox);
 
-		// Category buttons
 		List<LocationCategory> cats = ClientLocationData.getCategories();
 		int catY = startY + 68;
 		for (int i = 0; i < cats.size(); i++) {
 			LocationCategory cat = cats.get(i);
 			final String catId = cat.getId();
-			int btnY = catY + i * 22;
 			this.addRenderableWidget(Button.builder(
 					Component.literal(cat.getName()),
 					btn -> {
+						savedName = nameBox.getValue();
+						savedDesc = descBox.getValue();
 						selectedCategory = catId;
 						rebuildWidgets();
 					}
-			).bounds(centerX - 60, btnY, 120, 18).build());
+			).bounds(centerX - 60, catY + i * 22, 120, 18).build());
 		}
 
 		if (selectedCategory == null && !cats.isEmpty()) {
 			selectedCategory = cats.get(0).getId();
 		}
 
-		// Save button
 		this.addRenderableWidget(Button.builder(
 				Component.literal("Save"),
 				btn -> {
@@ -69,7 +70,6 @@ public class AddLocationScreen extends Screen {
 				}
 		).bounds(centerX - 80, this.height - 50, 70, 20).build());
 
-		// Cancel button
 		this.addRenderableWidget(Button.builder(
 				Component.literal("Cancel"),
 				btn -> mc.setScreen(parent)
@@ -88,7 +88,6 @@ public class AddLocationScreen extends Screen {
 		graphics.drawString(this.font, "Description (optional):", centerX - 80, startY + 20, 0xAAAAAA);
 		graphics.drawString(this.font, "Category:", centerX - 80, startY + 56, 0xAAAAAA);
 
-		// Selected category indicator
 		List<LocationCategory> cats = ClientLocationData.getCategories();
 		int catY = startY + 68;
 		for (int i = 0; i < cats.size(); i++) {
@@ -97,7 +96,6 @@ public class AddLocationScreen extends Screen {
 			}
 		}
 
-		// Current position
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player != null) {
 			int infoY = catY + cats.size() * 22 + 8;
@@ -113,9 +111,7 @@ public class AddLocationScreen extends Screen {
 	}
 
 	@Override
-	public boolean isPauseScreen() {
-		return false;
-	}
+	public boolean isPauseScreen() { return false; }
 
 	private static String formatDimension(String dim) {
 		if (dim.contains("overworld")) return "Overworld";

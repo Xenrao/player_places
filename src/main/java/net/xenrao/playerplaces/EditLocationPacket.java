@@ -34,28 +34,25 @@ public class EditLocationPacket {
 	public static void handle(EditLocationPacket msg, Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			ServerPlayer player = ctx.get().getSender();
-			if (player == null)
-				return;
+			if (player == null) return;
 			LocationManager manager = LocationManager.get();
-			if (manager == null)
-				return;
+			if (manager == null) return;
 			if (msg.newName == null || msg.newName.trim().isEmpty()) {
 				player.sendSystemMessage(Component.literal("\u00A7cName cannot be empty!"));
 				return;
 			}
-			if (msg.newName.length() > 32) {
-				player.sendSystemMessage(Component.literal("\u00A7cName max 32 characters!"));
+			if (msg.newName.trim().length() > manager.getMaxNameLength()) {
+				player.sendSystemMessage(Component.literal("\u00A7cName too long! Max: " + manager.getMaxNameLength()));
 				return;
 			}
-			String name = msg.newName.trim();
 			String desc = msg.newDescription != null ? msg.newDescription.trim() : "";
-			if (desc.length() > 64) desc = desc.substring(0, 64);
-			String cat = msg.newCategoryId;
-			if (manager.getCategory(cat) == null) {
+			if (desc.length() > manager.getMaxDescLength()) desc = desc.substring(0, manager.getMaxDescLength());
+			if (manager.getCategory(msg.newCategoryId) == null) {
 				player.sendSystemMessage(Component.literal("\u00A7cInvalid category!"));
 				return;
 			}
-			boolean success = manager.updateLocationByPlayer(msg.locationId, player.getUUID(), name, desc, cat);
+			String playerName = player.getGameProfile().getName();
+			boolean success = manager.updateLocationByPlayer(msg.locationId, playerName, msg.newName.trim(), desc, msg.newCategoryId);
 			if (success) {
 				player.sendSystemMessage(Component.literal("\u00A7aLocation updated."));
 				PlacesEvents.syncAllToEveryone(player.getServer());

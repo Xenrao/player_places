@@ -16,7 +16,6 @@ public class MyLocationsScreen extends Screen {
 	private List<Location> myLocations = new ArrayList<>();
 	private static final int ENTRY_HEIGHT = 24;
 	private static final int VISIBLE_COUNT = 6;
-
 	private int lastDataVersion = -1;
 
 	public MyLocationsScreen(Screen parent) {
@@ -27,28 +26,24 @@ public class MyLocationsScreen extends Screen {
 	@Override
 	protected void init() {
 		int centerX = this.width / 2;
-
 		Minecraft mc = Minecraft.getInstance();
-		long myCount = 0;
+
+		myLocations.clear();
 		if (mc.player != null) {
-			myLocations.clear();
+			String myName = mc.player.getGameProfile().getName();
 			for (Location loc : ClientLocationData.getLocations()) {
-				if (loc.getOwnerUUID().equals(mc.player.getUUID())) {
+				if (loc.getOwnerName().equalsIgnoreCase(myName)) {
 					myLocations.add(loc);
 				}
 			}
-			myCount = myLocations.size();
 		}
 
 		int max = ClientLocationData.getMaxLocationsPerPlayer();
-
-		// Add location button
 		this.addRenderableWidget(Button.builder(
-				Component.literal("+ Add Location (" + myCount + "/" + max + ")"),
+				Component.literal("+ Add Location (" + myLocations.size() + "/" + max + ")"),
 				btn -> mc.setScreen(new AddLocationScreen(this))
 		).bounds(centerX - 80, this.height - 50, 160, 20).build());
 
-		// Back button
 		this.addRenderableWidget(Button.builder(
 				Component.literal("Back"),
 				btn -> mc.setScreen(parent)
@@ -59,21 +54,14 @@ public class MyLocationsScreen extends Screen {
 	public void tick() {
 		super.tick();
 		int ver = ClientLocationData.getDataVersion();
-		if (lastDataVersion == -1) {
-			lastDataVersion = ver;
-			return;
-		}
-		if (lastDataVersion != ver) {
-			lastDataVersion = ver;
-			rebuildWidgets();
-		}
+		if (lastDataVersion == -1) { lastDataVersion = ver; return; }
+		if (lastDataVersion != ver) { lastDataVersion = ver; rebuildWidgets(); }
 	}
 
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 		this.renderBackground(graphics);
 		graphics.drawCenteredString(this.font, "My Locations", this.width / 2, 10, 0xFFFFFF);
-
 		super.render(graphics, mouseX, mouseY, partialTick);
 
 		int listX = this.width / 2 - 140;
@@ -89,62 +77,45 @@ public class MyLocationsScreen extends Screen {
 			for (int i = 0; i < VISIBLE_COUNT; i++) {
 				int index = i + scrollOffset;
 				if (index >= myLocations.size()) break;
-
 				Location loc = myLocations.get(index);
 				int entryY = listY + i * ENTRY_HEIGHT;
 
 				boolean hovered = mouseX >= listX && mouseX <= listX + listWidth
 						&& mouseY >= entryY && mouseY <= entryY + ENTRY_HEIGHT - 2;
-				int bgColor = hovered ? 0x60FFFFFF : 0x40000000;
-				graphics.fill(listX, entryY, listX + listWidth, entryY + ENTRY_HEIGHT - 2, bgColor);
+				graphics.fill(listX, entryY, listX + listWidth, entryY + ENTRY_HEIGHT - 2, hovered ? 0x60FFFFFF : 0x40000000);
 
-				// Name
 				String displayName = loc.getName();
 				if (displayName.length() > 22) displayName = displayName.substring(0, 20) + "..";
 				graphics.drawString(this.font, displayName, listX + 4, entryY + 3, 0xFFFFFF);
 
-				// Category + coords
 				LocationCategory cat = ClientLocationData.getCategoryById(loc.getCategoryId());
 				String catName = cat != null ? cat.getName() : "?";
-				graphics.drawString(this.font, catName + " | X:" + loc.getX() + " Z:" + loc.getZ(),
-						listX + 4, entryY + 13, 0xAAAAAA);
+				graphics.drawString(this.font, catName + " | X:" + loc.getX() + " Z:" + loc.getZ(), listX + 4, entryY + 13, 0xAAAAAA);
 
-				// Edit button
 				int editX = listX + listWidth - 70;
-				boolean editHov = mouseX >= editX && mouseX <= editX + 30
-						&& mouseY >= entryY + 2 && mouseY <= entryY + 16;
+				boolean editHov = mouseX >= editX && mouseX <= editX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16;
 				graphics.fill(editX, entryY + 2, editX + 30, entryY + 16, editHov ? 0xFF5555FF : 0xFF3333AA);
 				graphics.drawCenteredString(this.font, "Edit", editX + 15, entryY + 5, 0xFFFFFF);
 
-				// Delete button
 				int delX = listX + listWidth - 34;
-				boolean delHov = mouseX >= delX && mouseX <= delX + 30
-						&& mouseY >= entryY + 2 && mouseY <= entryY + 16;
+				boolean delHov = mouseX >= delX && mouseX <= delX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16;
 				graphics.fill(delX, entryY + 2, delX + 30, entryY + 16, delHov ? 0xFFFF3333 : 0xFFAA0000);
 				graphics.drawCenteredString(this.font, "Del", delX + 15, entryY + 5, 0xFFFFFF);
 
-				// Hover tooltip
 				if (hovered && mouseX < editX) {
 					List<Component> tooltip = new ArrayList<>();
 					tooltip.add(Component.literal("\u00A7e" + loc.getName()));
-					if (!loc.getDescription().isEmpty()) {
-						tooltip.add(Component.literal("\u00A7f" + loc.getDescription()));
-					}
+					if (!loc.getDescription().isEmpty()) tooltip.add(Component.literal("\u00A7f" + loc.getDescription()));
 					tooltip.add(Component.literal("\u00A77X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ()));
 					tooltip.add(Component.literal("\u00A77Dimension: " + formatDimension(loc.getDimension())));
-					if (cat != null) {
-						tooltip.add(Component.literal("\u00A77Category: " + cat.getName()));
-					}
+					if (cat != null) tooltip.add(Component.literal("\u00A77Category: " + cat.getName()));
 					graphics.renderTooltip(this.font, tooltip, Optional.empty(), mouseX, mouseY);
 				}
 			}
 
-			if (scrollOffset > 0) {
-				graphics.drawCenteredString(this.font, "\u25B2", this.width / 2, listY - 10, 0xAAAAAA);
-			}
-			if (scrollOffset < maxScroll) {
-				graphics.drawCenteredString(this.font, "\u25BC", this.width / 2, listY + VISIBLE_COUNT * ENTRY_HEIGHT, 0xAAAAAA);
-			}
+			if (scrollOffset > 0) graphics.drawCenteredString(this.font, "\u25B2", this.width / 2, listY - 10, 0xAAAAAA);
+			int maxSc = Math.max(0, myLocations.size() - VISIBLE_COUNT);
+			if (scrollOffset < maxSc) graphics.drawCenteredString(this.font, "\u25BC", this.width / 2, listY + VISIBLE_COUNT * ENTRY_HEIGHT, 0xAAAAAA);
 		}
 	}
 
@@ -154,26 +125,19 @@ public class MyLocationsScreen extends Screen {
 			int listX = this.width / 2 - 140;
 			int listY = 35;
 			int listWidth = 280;
-
 			for (int i = 0; i < VISIBLE_COUNT; i++) {
 				int index = i + scrollOffset;
 				if (index >= myLocations.size()) break;
-
 				Location loc = myLocations.get(index);
 				int entryY = listY + i * ENTRY_HEIGHT;
 
-				// Edit click
 				int editX = listX + listWidth - 70;
-				if (mouseX >= editX && mouseX <= editX + 30
-						&& mouseY >= entryY + 2 && mouseY <= entryY + 16) {
+				if (mouseX >= editX && mouseX <= editX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16) {
 					Minecraft.getInstance().setScreen(new PlayerEditScreen(this, loc));
 					return true;
 				}
-
-				// Delete click
 				int delX = listX + listWidth - 34;
-				if (mouseX >= delX && mouseX <= delX + 30
-						&& mouseY >= entryY + 2 && mouseY <= entryY + 16) {
+				if (mouseX >= delX && mouseX <= delX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16) {
 					PlayerPlacesMod.PACKET_HANDLER.sendToServer(new RemoveLocationPacket(loc.getId()));
 					return true;
 				}
@@ -191,9 +155,7 @@ public class MyLocationsScreen extends Screen {
 	}
 
 	@Override
-	public boolean isPauseScreen() {
-		return false;
-	}
+	public boolean isPauseScreen() { return false; }
 
 	private static String formatDimension(String dim) {
 		if (dim.contains("overworld")) return "Overworld";

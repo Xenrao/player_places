@@ -15,12 +15,16 @@ public class PlayerEditScreen extends Screen {
 	private EditBox nameBox;
 	private EditBox descBox;
 	private String selectedCategory;
+	private String savedName;
+	private String savedDesc;
 
 	public PlayerEditScreen(Screen parent, Location location) {
 		super(Component.literal("Edit Location"));
 		this.parent = parent;
 		this.location = location;
 		this.selectedCategory = location.getCategoryId();
+		this.savedName = location.getName();
+		this.savedDesc = location.getDescription();
 	}
 
 	@Override
@@ -28,19 +32,16 @@ public class PlayerEditScreen extends Screen {
 		int centerX = this.width / 2;
 		int startY = 45;
 
-		// Name edit
 		nameBox = new EditBox(this.font, centerX - 80, startY, 160, 18, Component.literal("Name"));
-		nameBox.setMaxLength(32);
-		nameBox.setValue(location.getName());
+		nameBox.setMaxLength(ClientLocationData.getMaxNameLength());
+		nameBox.setValue(savedName);
 		this.addRenderableWidget(nameBox);
 
-		// Description edit
 		descBox = new EditBox(this.font, centerX - 80, startY + 30, 160, 18, Component.literal("Description"));
-		descBox.setMaxLength(64);
-		descBox.setValue(location.getDescription());
+		descBox.setMaxLength(ClientLocationData.getMaxDescLength());
+		descBox.setValue(savedDesc);
 		this.addRenderableWidget(descBox);
 
-		// Category selection
 		List<LocationCategory> cats = ClientLocationData.getCategories();
 		int catY = startY + 68;
 		for (int i = 0; i < cats.size(); i++) {
@@ -49,13 +50,14 @@ public class PlayerEditScreen extends Screen {
 			this.addRenderableWidget(Button.builder(
 					Component.literal(cat.getName()),
 					btn -> {
+						savedName = nameBox.getValue();
+						savedDesc = descBox.getValue();
 						selectedCategory = catId;
 						rebuildWidgets();
 					}
 			).bounds(centerX - 60, catY + i * 22, 120, 18).build());
 		}
 
-		// Save
 		this.addRenderableWidget(Button.builder(Component.literal("Save"), btn -> {
 			String newName = nameBox.getValue().trim();
 			if (newName.isEmpty()) return;
@@ -65,7 +67,6 @@ public class PlayerEditScreen extends Screen {
 			Minecraft.getInstance().setScreen(parent);
 		}).bounds(centerX - 80, this.height - 50, 70, 20).build());
 
-		// Cancel
 		this.addRenderableWidget(Button.builder(Component.literal("Cancel"), btn -> {
 			Minecraft.getInstance().setScreen(parent);
 		}).bounds(centerX + 10, this.height - 50, 70, 20).build());
@@ -83,7 +84,6 @@ public class PlayerEditScreen extends Screen {
 		graphics.drawString(this.font, "Description:", centerX - 80, startY + 20, 0xAAAAAA);
 		graphics.drawString(this.font, "Category:", centerX - 80, startY + 56, 0xAAAAAA);
 
-		// Selected indicator
 		List<LocationCategory> cats = ClientLocationData.getCategories();
 		int catY = startY + 68;
 		for (int i = 0; i < cats.size(); i++) {
@@ -92,7 +92,6 @@ public class PlayerEditScreen extends Screen {
 			}
 		}
 
-		// Location info
 		int infoY = catY + cats.size() * 22 + 8;
 		graphics.drawString(this.font, "Pos: X:" + location.getX() + " Y:" + location.getY() + " Z:" + location.getZ(),
 				centerX - 80, infoY, 0x888888);
@@ -102,9 +101,7 @@ public class PlayerEditScreen extends Screen {
 	}
 
 	@Override
-	public boolean isPauseScreen() {
-		return false;
-	}
+	public boolean isPauseScreen() { return false; }
 
 	private static String formatDimension(String dim) {
 		if (dim.contains("overworld")) return "Overworld";

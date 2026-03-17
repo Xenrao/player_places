@@ -25,18 +25,17 @@ public class RemoveLocationPacket {
 	public static void handle(RemoveLocationPacket msg, Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			ServerPlayer player = ctx.get().getSender();
-			if (player == null)
-				return;
+			if (player == null) return;
 			LocationManager manager = LocationManager.get();
-			if (manager == null)
-				return;
+			if (manager == null) return;
 			boolean isAdmin = player.hasPermissions(2);
-			boolean success = manager.removeLocation(msg.locationId, player.getUUID(), isAdmin);
+			String playerName = player.getGameProfile().getName();
+			boolean success = manager.removeLocation(msg.locationId, playerName, isAdmin);
 			if (success) {
-				player.sendSystemMessage(Component.literal("§aMekan silindi."));
+				player.sendSystemMessage(Component.literal("\u00A7aLocation deleted."));
 				PlacesEvents.syncAllToEveryone(player.getServer());
 			} else {
-				player.sendSystemMessage(Component.literal("§cMekan silinemedi! Yetkiniz yok veya mekan bulunamadı."));
+				player.sendSystemMessage(Component.literal("\u00A7cCannot delete! No permission or not found."));
 			}
 		});
 		ctx.get().setPacketHandled(true);

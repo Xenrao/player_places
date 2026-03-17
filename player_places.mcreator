@@ -1,0 +1,245 @@
+{
+  "mod_elements": [
+    {
+      "name": "Location",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "location",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/Location.java"
+        ]
+      }
+    },
+    {
+      "name": "LocationCategory",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "location_category",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/LocationCategory.java"
+        ]
+      }
+    },
+    {
+      "name": "LocationManager",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "location_manager",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/LocationManager.java"
+        ]
+      }
+    },
+    {
+      "name": "PlacesEvents",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "places_events",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/PlacesEvents.java"
+        ]
+      }
+    },
+    {
+      "name": "SyncLocationsPacket",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "sync_locations_packet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/SyncLocationsPacket.java"
+        ]
+      }
+    },
+    {
+      "name": "SyncCategoriesPacket",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "sync_categories_packet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/SyncCategoriesPacket.java"
+        ]
+      }
+    },
+    {
+      "name": "SyncConfigPacket",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "sync_config_packet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/SyncConfigPacket.java"
+        ]
+      }
+    },
+    {
+      "name": "AddLocationPacket",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "add_location_packet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/AddLocationPacket.java"
+        ]
+      }
+    },
+    {
+      "name": "RemoveLocationPacket",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "remove_location_packet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/RemoveLocationPacket.java"
+        ]
+      }
+    },
+    {
+      "name": "AdminActionPacket",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "admin_action_packet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/AdminActionPacket.java"
+        ]
+      }
+    },
+    {
+      "name": "ClientLocationData",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "client_location_data",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/ClientLocationData.java"
+        ]
+      }
+    },
+    {
+      "name": "PlacesKeyBindings",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "places_key_bindings",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/PlacesKeyBindings.java"
+        ]
+      }
+    },
+    {
+      "name": "LocationListScreen",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "location_list_screen",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/LocationListScreen.java"
+        ]
+      }
+    },
+    {
+      "name": "AddLocationScreen",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "add_location_screen",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/AddLocationScreen.java"
+        ]
+      }
+    },
+    {
+      "name": "AdminScreen",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "admin_screen",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/AdminScreen.java"
+        ]
+      }
+    },
+    {
+      "name": "AdminEditScreen",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "admin_edit_screen",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/AdminEditScreen.java"
+        ]
+      }
+    },
+    {
+      "name": "TrackingOverlay",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "tracking_overlay",
+      "metadata": {
+        "files": [
+          "src/main/java/net/xenrao/playerplaces/TrackingOverlay.java"
+        ]
+      }
+    }
+  ],
+  "variable_elements": [],
+  "sound_elements": [],
+  "tag_elements": {},
+  "tab_element_order": {},
+  "language_map": {
+    "en_us": {
+      "key.player_places.open_gui": "Open Locations",
+      "key.categories.player_places": "Player Places"
+    }
+  },
+  "metadata": {
+    "files": [
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/xenrao/playerplaces/PlayerPlacesMod.java",
+      "src/main/resources/META-INF/mods.toml"
+    ]
+  },
+  "foldersRoot": {
+    "name": "~",
+    "children": []
+  },
+  "workspaceSettings": {
+    "modid": "player_places",
+    "modName": "Player Places",
+    "version": "1.0.0",
+    "author": "MCreator",
+    "websiteURL": "https://mcreator.net",
+    "license": "Not specified",
+    "serverSideOnly": false,
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "mcreatorDependencies": [],
+    "currentGenerator": "forge-1.20.1",
+    "modElementsPackage": "net.xenrao.playerplaces"
+  },
+  "mcreatorVersion": 202500345720
+}

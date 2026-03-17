@@ -17,6 +17,8 @@ public class AdminScreen extends Screen {
 	private int scrollOffset = 0;
 	private EditBox searchBox;
 	private EditBox maxLocationsBox;
+	private EditBox maxNameLenBox;
+	private EditBox maxDescLenBox;
 	private EditBox newCatIdBox;
 	private EditBox newCatNameBox;
 	private EditBox newCatIconBox;
@@ -38,30 +40,20 @@ public class AdminScreen extends Screen {
 		int centerX = this.width / 2;
 
 		this.addRenderableWidget(Button.builder(Component.literal("Locations"), btn -> {
-			currentTab = 0;
-			scrollOffset = 0;
-			rebuildWidgets();
+			currentTab = 0; scrollOffset = 0; rebuildWidgets();
 		}).bounds(centerX - 120, 25, 75, 16).build());
 
 		this.addRenderableWidget(Button.builder(Component.literal("Categories"), btn -> {
-			currentTab = 1;
-			scrollOffset = 0;
-			rebuildWidgets();
+			currentTab = 1; scrollOffset = 0; rebuildWidgets();
 		}).bounds(centerX - 40, 25, 80, 16).build());
 
 		this.addRenderableWidget(Button.builder(Component.literal("Settings"), btn -> {
-			currentTab = 2;
-			scrollOffset = 0;
-			rebuildWidgets();
+			currentTab = 2; scrollOffset = 0; rebuildWidgets();
 		}).bounds(centerX + 45, 25, 75, 16).build());
 
-		if (currentTab == 0) {
-			initLocationsTab(centerX);
-		} else if (currentTab == 1) {
-			initCategoriesTab(centerX);
-		} else {
-			initSettingsTab(centerX);
-		}
+		if (currentTab == 0) initLocationsTab(centerX);
+		else if (currentTab == 1) initCategoriesTab(centerX);
+		else initSettingsTab(centerX);
 
 		this.addRenderableWidget(Button.builder(
 				Component.literal("Back"),
@@ -70,13 +62,10 @@ public class AdminScreen extends Screen {
 	}
 
 	private void initLocationsTab(int centerX) {
-		searchBox = new EditBox(this.font, centerX - 100, 48, 200, 16, Component.literal("Search player..."));
+		searchBox = new EditBox(this.font, centerX - 100, 48, 200, 16, Component.literal("Search..."));
 		searchBox.setMaxLength(32);
 		searchBox.setValue(savedSearchText);
-		searchBox.setResponder(text -> {
-			scrollOffset = 0;
-			updateFilteredLocations();
-		});
+		searchBox.setResponder(text -> { scrollOffset = 0; updateFilteredLocations(); });
 		this.addRenderableWidget(searchBox);
 		updateFilteredLocations();
 	}
@@ -108,18 +97,42 @@ public class AdminScreen extends Screen {
 	}
 
 	private void initSettingsTab(int centerX) {
-		int inputY = 80;
-		maxLocationsBox = new EditBox(this.font, centerX + 10, inputY, 40, 16,
-				Component.literal(String.valueOf(ClientLocationData.getMaxLocationsPerPlayer())));
+		int leftX = centerX - 120;
+		int rightX = centerX + 50;
+		int y = 60;
+		int rowH = 28;
+
+		// Row 1: Max locations per player
+		maxLocationsBox = new EditBox(this.font, rightX, y, 40, 16, Component.empty());
 		maxLocationsBox.setMaxLength(3);
 		maxLocationsBox.setValue(String.valueOf(ClientLocationData.getMaxLocationsPerPlayer()));
 		this.addRenderableWidget(maxLocationsBox);
-
 		this.addRenderableWidget(Button.builder(Component.literal("Save"), btn -> {
-			String val = maxLocationsBox.getValue().trim();
 			PlayerPlacesMod.PACKET_HANDLER.sendToServer(
-					new AdminActionPacket(AdminActionPacket.ACTION_SET_MAX_LOCATIONS, val, "", ""));
-		}).bounds(centerX + 56, inputY, 40, 16).build());
+					new AdminActionPacket(AdminActionPacket.ACTION_SET_MAX_LOCATIONS, "maxLocations", maxLocationsBox.getValue().trim(), ""));
+		}).bounds(rightX + 46, y, 40, 16).build());
+
+		// Row 2: Max name length
+		y += rowH;
+		maxNameLenBox = new EditBox(this.font, rightX, y, 40, 16, Component.empty());
+		maxNameLenBox.setMaxLength(3);
+		maxNameLenBox.setValue(String.valueOf(ClientLocationData.getMaxNameLength()));
+		this.addRenderableWidget(maxNameLenBox);
+		this.addRenderableWidget(Button.builder(Component.literal("Save"), btn -> {
+			PlayerPlacesMod.PACKET_HANDLER.sendToServer(
+					new AdminActionPacket(AdminActionPacket.ACTION_SET_MAX_LOCATIONS, "maxNameLength", maxNameLenBox.getValue().trim(), ""));
+		}).bounds(rightX + 46, y, 40, 16).build());
+
+		// Row 3: Max desc length
+		y += rowH;
+		maxDescLenBox = new EditBox(this.font, rightX, y, 40, 16, Component.empty());
+		maxDescLenBox.setMaxLength(3);
+		maxDescLenBox.setValue(String.valueOf(ClientLocationData.getMaxDescLength()));
+		this.addRenderableWidget(maxDescLenBox);
+		this.addRenderableWidget(Button.builder(Component.literal("Save"), btn -> {
+			PlayerPlacesMod.PACKET_HANDLER.sendToServer(
+					new AdminActionPacket(AdminActionPacket.ACTION_SET_MAX_LOCATIONS, "maxDescLength", maxDescLenBox.getValue().trim(), ""));
+		}).bounds(rightX + 46, y, 40, 16).build());
 	}
 
 	private void updateFilteredLocations() {
@@ -162,7 +175,6 @@ public class AdminScreen extends Screen {
 			graphics.drawCenteredString(this.font, "No locations found.", this.width / 2, listY + 30, 0x888888);
 			return;
 		}
-
 		int maxScroll = Math.max(0, filteredLocations.size() - VISIBLE_COUNT);
 		if (scrollOffset > maxScroll) scrollOffset = maxScroll;
 
@@ -174,16 +186,14 @@ public class AdminScreen extends Screen {
 
 			boolean hovered = mouseX >= listX && mouseX <= listX + listWidth
 					&& mouseY >= entryY && mouseY <= entryY + ENTRY_HEIGHT - 2;
-			graphics.fill(listX, entryY, listX + listWidth, entryY + ENTRY_HEIGHT - 2,
-					hovered ? 0x60FFFFFF : 0x40000000);
+			graphics.fill(listX, entryY, listX + listWidth, entryY + ENTRY_HEIGHT - 2, hovered ? 0x60FFFFFF : 0x40000000);
 
 			String display = loc.getOwnerName() + " - " + loc.getName();
 			if (display.length() > 30) display = display.substring(0, 28) + "..";
 			graphics.drawString(this.font, display, listX + 4, entryY + 3, 0xFFFFFF);
 
 			LocationCategory cat = ClientLocationData.getCategoryById(loc.getCategoryId());
-			String catName = cat != null ? cat.getName() : "?";
-			graphics.drawString(this.font, "(" + catName + ")", listX + 4, entryY + 12, 0x888888);
+			graphics.drawString(this.font, "(" + (cat != null ? cat.getName() : "?") + ")", listX + 4, entryY + 12, 0x888888);
 
 			int editX = listX + listWidth - 70;
 			boolean editHov = mouseX >= editX && mouseX <= editX + 30 && mouseY >= entryY + 2 && mouseY <= entryY + 16;
@@ -228,7 +238,13 @@ public class AdminScreen extends Screen {
 
 	private void renderSettingsTab(GuiGraphics graphics, int mouseX, int mouseY) {
 		int centerX = this.width / 2;
-		graphics.drawString(this.font, "Max locations per player:", centerX - 120, 84, 0xFFFFFF);
+		int leftX = centerX - 120;
+		int y = 60;
+		int rowH = 28;
+
+		graphics.drawString(this.font, "Max locations per player:", leftX, y + 4, 0xFFFFFF);
+		graphics.drawString(this.font, "Max name length:", leftX, y + rowH + 4, 0xFFFFFF);
+		graphics.drawString(this.font, "Max description length:", leftX, y + rowH * 2 + 4, 0xFFFFFF);
 	}
 
 	@Override

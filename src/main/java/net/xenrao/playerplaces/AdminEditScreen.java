@@ -15,7 +15,6 @@ public class AdminEditScreen extends Screen {
 	private EditBox nameBox;
 	private EditBox descBox;
 	private EditBox ownerNameBox;
-	private EditBox ownerUUIDBox;
 	private EditBox xBox;
 	private EditBox yBox;
 	private EditBox zBox;
@@ -36,14 +35,14 @@ public class AdminEditScreen extends Screen {
 		int rightCol = centerX + 10;
 		int y = 32;
 
-		// Left column - Basic info
+		// Left column
 		nameBox = new EditBox(this.font, leftCol, y, 140, 16, Component.literal("Name"));
-		nameBox.setMaxLength(32);
+		nameBox.setMaxLength(64);
 		nameBox.setValue(location.getName());
 		this.addRenderableWidget(nameBox);
 
 		descBox = new EditBox(this.font, leftCol, y + 28, 140, 16, Component.literal("Desc"));
-		descBox.setMaxLength(64);
+		descBox.setMaxLength(128);
 		descBox.setValue(location.getDescription());
 		this.addRenderableWidget(descBox);
 
@@ -51,11 +50,6 @@ public class AdminEditScreen extends Screen {
 		ownerNameBox.setMaxLength(32);
 		ownerNameBox.setValue(location.getOwnerName());
 		this.addRenderableWidget(ownerNameBox);
-
-		ownerUUIDBox = new EditBox(this.font, leftCol, y + 84, 140, 16, Component.literal("UUID"));
-		ownerUUIDBox.setMaxLength(36);
-		ownerUUIDBox.setValue(location.getOwnerUUID().toString());
-		this.addRenderableWidget(ownerUUIDBox);
 
 		// Right column - Position
 		xBox = new EditBox(this.font, rightCol, y, 40, 16, Component.literal("X"));
@@ -78,7 +72,7 @@ public class AdminEditScreen extends Screen {
 		dimensionBox.setValue(location.getDimension());
 		this.addRenderableWidget(dimensionBox);
 
-		// Category buttons - right column lower
+		// Category buttons
 		List<LocationCategory> cats = ClientLocationData.getCategories();
 		int catY = y + 60;
 		for (int i = 0; i < cats.size(); i++) {
@@ -96,15 +90,14 @@ public class AdminEditScreen extends Screen {
 			if (newName.isEmpty()) return;
 			String newDesc = descBox.getValue().trim();
 			String newOwnerName = ownerNameBox.getValue().trim();
-			String newOwnerUUID = ownerUUIDBox.getValue().trim();
 			String newX = xBox.getValue().trim();
 			String newY = yBox.getValue().trim();
 			String newZ = zBox.getValue().trim();
 			String newDim = dimensionBox.getValue().trim();
 
-			// Pack all data: locationId|name|desc|category|ownerName|ownerUUID|x|y|z|dimension
+			// Pack: name|desc|category|ownerName|x|y|z|dimension
 			String packed = newName + "|" + newDesc + "|" + selectedCategory + "|"
-					+ newOwnerName + "|" + newOwnerUUID + "|"
+					+ newOwnerName + "|"
 					+ newX + "|" + newY + "|" + newZ + "|" + newDim;
 
 			PlayerPlacesMod.PACKET_HANDLER.sendToServer(
@@ -132,7 +125,6 @@ public class AdminEditScreen extends Screen {
 		graphics.drawString(this.font, "Name:", leftCol, y - 9, 0xAAAAAA);
 		graphics.drawString(this.font, "Description:", leftCol, y + 19, 0xAAAAAA);
 		graphics.drawString(this.font, "Owner Name:", leftCol, y + 47, 0xAAAAAA);
-		graphics.drawString(this.font, "Owner UUID:", leftCol, y + 75, 0xAAAAAA);
 
 		graphics.drawString(this.font, "X:", rightCol - 10, y + 4, 0xAAAAAA);
 		graphics.drawString(this.font, "Y:", rightCol + 40, y + 4, 0xAAAAAA);
@@ -140,7 +132,6 @@ public class AdminEditScreen extends Screen {
 		graphics.drawString(this.font, "Dimension:", rightCol, y + 19, 0xAAAAAA);
 		graphics.drawString(this.font, "Category:", rightCol, y + 49, 0xAAAAAA);
 
-		// Selected category indicator
 		List<LocationCategory> cats = ClientLocationData.getCategories();
 		int catY = y + 60;
 		for (int i = 0; i < cats.size(); i++) {

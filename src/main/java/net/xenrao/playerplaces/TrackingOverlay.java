@@ -13,14 +13,19 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = PlayerPlacesMod.MODID, value = Dist.CLIENT)
 public class TrackingOverlay {
 
+	private static long arrivedTimestamp = -1;
+	private static final long ARRIVED_DISPLAY_MS = 5000;
+
 	@SubscribeEvent
 	public static void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
 		if (event.getOverlay() != VanillaGuiOverlay.HOTBAR.type())
 			return;
 
 		Location tracked = ClientLocationData.getTrackedLocation();
-		if (tracked == null)
+		if (tracked == null) {
+			arrivedTimestamp = -1;
 			return;
+		}
 
 		Minecraft mc = Minecraft.getInstance();
 		LocalPlayer player = mc.player;
@@ -37,6 +42,7 @@ public class TrackingOverlay {
 		int y = screenHeight - 95;
 
 		if (!sameDimension) {
+			arrivedTimestamp = -1;
 			String dimName = formatDimension(tracked.getDimension());
 			String line1 = ">> " + tracked.getName() + " <<";
 			String line2 = "Go to: " + dimName;
@@ -50,15 +56,30 @@ public class TrackingOverlay {
 			double dz = tracked.getZ() - player.getZ();
 			double distance = Math.sqrt(dx * dx + dz * dz);
 
-			String direction = getDirection(player.getYRot(), dx, dz);
-			String distStr = String.valueOf((int) distance);
-
 			if (distance < 10) {
+				if (arrivedTimestamp == -1) {
+					arrivedTimestamp = System.currentTimeMillis();
+				}
+
+				long elapsed = System.currentTimeMillis() - arrivedTimestamp;
+				if (elapsed >= ARRIVED_DISPLAY_MS) {
+					ClientLocationData.clearTracking();
+					arrivedTimestamp = -1;
+					return;
+				}
+
 				String line1 = ">> " + tracked.getName() + " <<";
 				String line2 = "You have arrived!";
-				drawCenteredStringWithShadow(graphics, mc, line1, screenWidth / 2, y - 6, 0x55FF55);
-				drawCenteredStringWithShadow(graphics, mc, line2, screenWidth / 2, y + 6, 0x55FF55);
+				int remainSec = (int) ((ARRIVED_DISPLAY_MS - elapsed) / 1000) + 1;
+				String line3 = "Stopping in " + remainSec + "s";
+				drawCenteredStringWithShadow(graphics, mc, line1, screenWidth / 2, y - 12, 0x55FF55);
+				drawCenteredStringWithShadow(graphics, mc, line2, screenWidth / 2, y, 0x55FF55);
+				drawCenteredStringWithShadow(graphics, mc, line3, screenWidth / 2, y + 12, 0x888888);
 			} else {
+				arrivedTimestamp = -1;
+				String direction = getDirection(player.getYRot(), dx, dz);
+				String distStr = String.valueOf((int) distance);
+
 				String line1 = ">> " + tracked.getName() + " <<";
 				String line2 = direction + " | " + distStr + " blocks";
 				String line3 = "X:" + tracked.getX() + " Y:" + tracked.getY() + " Z:" + tracked.getZ();

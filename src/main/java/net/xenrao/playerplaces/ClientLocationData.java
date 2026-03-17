@@ -9,6 +9,8 @@ public class ClientLocationData {
 	private static List<Location> locations = new ArrayList<>();
 	private static List<LocationCategory> categories = new ArrayList<>();
 	private static int maxLocationsPerPlayer = 5;
+	private static int maxNameLength = 32;
+	private static int maxDescLength = 64;
 	private static int dataVersion = 0;
 
 	@Nullable
@@ -41,6 +43,24 @@ public class ClientLocationData {
 		return maxLocationsPerPlayer;
 	}
 
+	public static void setMaxNameLength(int max) {
+		maxNameLength = max;
+		dataVersion++;
+	}
+
+	public static int getMaxNameLength() {
+		return maxNameLength;
+	}
+
+	public static void setMaxDescLength(int max) {
+		maxDescLength = max;
+		dataVersion++;
+	}
+
+	public static int getMaxDescLength() {
+		return maxDescLength;
+	}
+
 	public static int getDataVersion() {
 		return dataVersion;
 	}
@@ -61,9 +81,7 @@ public class ClientLocationData {
 	@Nullable
 	public static LocationCategory getCategoryById(String id) {
 		for (LocationCategory cat : categories) {
-			if (cat.getId().equals(id)) {
-				return cat;
-			}
+			if (cat.getId().equals(id)) return cat;
 		}
 		return null;
 	}

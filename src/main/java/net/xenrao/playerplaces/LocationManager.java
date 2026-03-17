@@ -1,24 +1,35 @@
 package net.xenrao.playerplaces;
 
-import com.google.gson.*;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.server.MinecraftServer;
+
+import java.util.stream.Collectors;
+import java.util.UUID;
+import java.util.List;
+import java.util.Iterator;
+import java.util.Collections;
+import java.util.ArrayList;
+
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
+
+import com.google.gson.JsonElement;
+import com.google.gson.GsonBuilder;
+import com.google.gson.Gson;
+import com.google.gson.*;
 
 public class LocationManager {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static LocationManager instance;
-
 	private final Path dataFile;
 	private final List<Location> locations = new ArrayList<>();
 	private final List<LocationCategory> categories = new ArrayList<>();
 	private int maxLocationsPerPlayer = 5;
+	private int maxNameLength = 32;
+	private int maxDescLength = 64;
 
 	private LocationManager(MinecraftServer server) {
 		Path worldDir = server.getWorldPath(LevelResource.ROOT);
@@ -47,11 +58,8 @@ public class LocationManager {
 	}
 
 	// --- Locations CRUD ---
-
 	public boolean addLocation(Location location) {
-		long count = locations.stream()
-				.filter(l -> l.getOwnerUUID().equals(location.getOwnerUUID()))
-				.count();
+		long count = locations.stream().filter(l -> l.getOwnerUUID().equals(location.getOwnerUUID())).count();
 		if (count >= maxLocationsPerPlayer) {
 			return false;
 		}
@@ -77,9 +85,7 @@ public class LocationManager {
 	}
 
 	public Location getLocation(String locationId) {
-		return locations.stream()
-				.filter(l -> l.getId().equals(locationId))
-				.findFirst().orElse(null);
+		return locations.stream().filter(l -> l.getId().equals(locationId)).findFirst().orElse(null);
 	}
 
 	public List<Location> getAllLocations() {
@@ -87,9 +93,7 @@ public class LocationManager {
 	}
 
 	public List<Location> getLocationsByPlayer(UUID playerUUID) {
-		return locations.stream()
-				.filter(l -> l.getOwnerUUID().equals(playerUUID))
-				.collect(Collectors.toList());
+		return locations.stream().filter(l -> l.getOwnerUUID().equals(playerUUID)).collect(Collectors.toList());
 	}
 
 	public void updateLocation(String locationId, String newName, String newDescription, String newCategoryId) {
@@ -121,7 +125,6 @@ public class LocationManager {
 	}
 
 	// --- Categories CRUD ---
-
 	public void addCategory(LocationCategory category) {
 		categories.removeIf(c -> c.getId().equals(category.getId()));
 		categories.add(category);
@@ -139,13 +142,10 @@ public class LocationManager {
 	}
 
 	public LocationCategory getCategory(String categoryId) {
-		return categories.stream()
-				.filter(c -> c.getId().equals(categoryId))
-				.findFirst().orElse(null);
+		return categories.stream().filter(c -> c.getId().equals(categoryId)).findFirst().orElse(null);
 	}
 
 	// --- Config ---
-
 	public int getMaxLocationsPerPlayer() {
 		return maxLocationsPerPlayer;
 	}
@@ -155,13 +155,32 @@ public class LocationManager {
 		save();
 	}
 
-	// --- Persistence ---
+	public int getMaxNameLength() {
+		return maxNameLength;
+	}
 
+	public void setMaxNameLength(int max) {
+		this.maxNameLength = max;
+		save();
+	}
+
+	public int getMaxDescLength() {
+		return maxDescLength;
+	}
+
+	public void setMaxDescLength(int max) {
+		this.maxDescLength = max;
+		save();
+	}
+
+	// --- Persistence ---
 	private void save() {
 		try {
 			JsonObject root = new JsonObject();
 			JsonObject config = new JsonObject();
 			config.addProperty("maxLocationsPerPlayer", maxLocationsPerPlayer);
+			config.addProperty("maxNameLength", maxNameLength);
+			config.addProperty("maxDescLength", maxDescLength);
 			root.add("config", config);
 			JsonArray catArray = new JsonArray();
 			for (LocationCategory cat : categories) {
@@ -181,9 +200,9 @@ public class LocationManager {
 			PlayerPlacesMod.LOGGER.error("Failed to save PlayerPlaces data", e);
 		}
 	}
-	
+
 	public void forceSave() {
-	    save();
+		save();
 	}
 
 	private void load() {
@@ -196,9 +215,12 @@ public class LocationManager {
 			JsonObject root = GSON.fromJson(reader, JsonObject.class);
 			if (root.has("config")) {
 				JsonObject config = root.getAsJsonObject("config");
-				if (config.has("maxLocationsPerPlayer")) {
+				if (config.has("maxLocationsPerPlayer"))
 					maxLocationsPerPlayer = config.get("maxLocationsPerPlayer").getAsInt();
-				}
+				if (config.has("maxNameLength"))
+					maxNameLength = config.get("maxNameLength").getAsInt();
+				if (config.has("maxDescLength"))
+					maxDescLength = config.get("maxDescLength").getAsInt();
 			}
 			categories.clear();
 			if (root.has("categories")) {

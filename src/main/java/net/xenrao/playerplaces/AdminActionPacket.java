@@ -2,9 +2,13 @@ package net.xenrao.playerplaces;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
+import com.mojang.authlib.GameProfile;
+
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -87,21 +91,36 @@ public class AdminActionPacket {
 					}
 				}
 				case ACTION_SET_MAX_LOCATIONS -> {
+					// param1 = key, param2 = value
+					String key = msg.param1;
+					String value = msg.param2;
 					try {
-						int max = Integer.parseInt(msg.param1);
-						if (max < 1 || max > 100) {
-							player.sendSystemMessage(Component.literal("\u00A7cValue must be 1-100!"));
-							return;
+						int val = Integer.parseInt(value);
+						switch (key) {
+							case "maxLocations" -> {
+								if (val < 1 || val > 100) { player.sendSystemMessage(Component.literal("\u00A7cValue must be 1-100!")); return; }
+								manager.setMaxLocationsPerPlayer(val);
+								player.sendSystemMessage(Component.literal("\u00A7aMax locations updated: " + val));
+							}
+							case "maxNameLength" -> {
+								if (val < 3 || val > 64) { player.sendSystemMessage(Component.literal("\u00A7cValue must be 3-64!")); return; }
+								manager.setMaxNameLength(val);
+								player.sendSystemMessage(Component.literal("\u00A7aMax name length updated: " + val));
+							}
+							case "maxDescLength" -> {
+								if (val < 0 || val > 256) { player.sendSystemMessage(Component.literal("\u00A7cValue must be 0-256!")); return; }
+								manager.setMaxDescLength(val);
+								player.sendSystemMessage(Component.literal("\u00A7aMax description length updated: " + val));
+							}
+							default -> player.sendSystemMessage(Component.literal("\u00A7cUnknown setting: " + key));
 						}
-						manager.setMaxLocationsPerPlayer(max);
-						player.sendSystemMessage(Component.literal("\u00A7aMax locations updated: " + max));
 					} catch (NumberFormatException e) {
 						player.sendSystemMessage(Component.literal("\u00A7cInvalid number!"));
 					}
 				}
 				case ACTION_FULL_EDIT_LOCATION -> {
 					// param1 = locationId
-					// param2 = packed: name|desc|category|ownerName|ownerUUID|x|y|z|dimension
+					// param2 = packed: name|desc|category|ownerName|x|y|z|dimension
 					Location loc = manager.getLocation(msg.param1);
 					if (loc == null) {
 						player.sendSystemMessage(Component.literal("\u00A7cLocation not found!"));
@@ -109,7 +128,7 @@ public class AdminActionPacket {
 					}
 					try {
 						String[] parts = msg.param2.split("\\|", -1);
-						if (parts.length < 9) {
+						if (parts.length < 8) {
 							player.sendSystemMessage(Component.literal("\u00A7cInvalid data format!"));
 							return;
 						}
@@ -117,23 +136,38 @@ public class AdminActionPacket {
 						String newDesc = parts[1].trim();
 						String newCat = parts[2].trim();
 						String newOwnerName = parts[3].trim();
-						String newOwnerUUID = parts[4].trim();
-						String newX = parts[5].trim();
-						String newY = parts[6].trim();
-						String newZ = parts[7].trim();
-						String newDim = parts[8].trim();
+						String newX = parts[4].trim();
+						String newY = parts[5].trim();
+						String newZ = parts[6].trim();
+						String newDim = parts[7].trim();
 
 						if (!newName.isEmpty()) loc.setName(newName);
 						loc.setDescription(newDesc);
 						if (!newCat.isEmpty() && manager.getCategory(newCat) != null) loc.setCategoryId(newCat);
-						if (!newOwnerName.isEmpty()) loc.setOwnerName(newOwnerName);
-						if (!newOwnerUUID.isEmpty()) {
-							try {
-								loc.setOwnerUUID(UUID.fromString(newOwnerUUID));
-							} catch (IllegalArgumentException e) {
-								player.sendSystemMessage(Component.literal("\u00A7cInvalid UUID format! Owner UUID not changed."));
+
+						// Owner name change - resolve UUID from server
+						if (!newOwnerName.isEmpty() && !newOwnerName.equals(loc.getOwnerName())) {
+							MinecraftServer server = player.getServer();
+							if (server != null) {
+								// Try online player first
+								ServerPlayer targetPlayer = server.getPlayerList().getPlayerByName(newOwnerName);
+								if (targetPlayer != null) {
+									loc.setOwnerName(targetPlayer.getGameProfile().getName());
+									loc.setOwnerUUID(targetPlayer.getUUID());
+								} else {
+									// Try offline lookup
+									Optional<GameProfile> profile = server.getProfileCache().get(newOwnerName);
+									if (profile.isPresent()) {
+										loc.setOwnerName(profile.get().getName());
+										loc.setOwnerUUID(profile.get().getId());
+									} else {
+										loc.setOwnerName(newOwnerName);
+										player.sendSystemMessage(Component.literal("\u00A7eWarning: Player '" + newOwnerName + "' not found. UUID unchanged."));
+									}
+								}
 							}
 						}
+
 						if (!newX.isEmpty()) loc.setX(Integer.parseInt(newX));
 						if (!newY.isEmpty()) loc.setY(Integer.parseInt(newY));
 						if (!newZ.isEmpty()) loc.setZ(Integer.parseInt(newZ));

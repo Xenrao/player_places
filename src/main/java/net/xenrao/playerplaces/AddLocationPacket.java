@@ -41,17 +41,19 @@ public class AddLocationPacket {
 				player.sendSystemMessage(Component.literal("\u00A7cLocation name cannot be empty!"));
 				return;
 			}
-			if (msg.name.length() > 32) {
-				player.sendSystemMessage(Component.literal("\u00A7cLocation name max 32 characters!"));
-				return;
+			if (msg.name.length() > manager.getMaxNameLength()) {
+			    player.sendSystemMessage(Component.literal("\u00A7cName too long! Max: " + manager.getMaxNameLength()));
+			    return;
+			}
+			String desc = msg.description != null ? msg.description.trim() : "";
+			if (desc.length() > manager.getMaxDescLength()) {
+			    desc = desc.substring(0, manager.getMaxDescLength());
 			}
 			if (manager.getCategory(msg.categoryId) == null) {
 				player.sendSystemMessage(Component.literal("\u00A7cInvalid category!"));
 				return;
 			}
 			String dimension = player.level().dimension().location().toString();
-			String desc = msg.description != null ? msg.description.trim() : "";
-			if (desc.length() > 64) desc = desc.substring(0, 64);
 
 			Location location = new Location(
 					UUID.randomUUID().toString(),

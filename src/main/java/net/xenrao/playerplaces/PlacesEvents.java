@@ -68,7 +68,7 @@ public class PlacesEvents {
 				new SyncCategoriesPacket(manager.getCategories()));
 		PlayerPlacesMod.PACKET_HANDLER.send(
 				PacketDistributor.PLAYER.with(() -> player),
-				new SyncConfigPacket(manager.getMaxLocationsPerPlayer()));
+				new SyncConfigPacket(manager.getMaxLocationsPerPlayer(), manager.getMaxNameLength(), manager.getMaxDescLength()));
 	}
 
 	public static void syncAllToEveryone(MinecraftServer server) {
@@ -83,6 +83,6 @@ public class PlacesEvents {
 				new SyncCategoriesPacket(manager.getCategories()));
 		PlayerPlacesMod.PACKET_HANDLER.send(
 				PacketDistributor.ALL.noArg(),
-				new SyncConfigPacket(manager.getMaxLocationsPerPlayer()));
+				new SyncConfigPacket(manager.getMaxLocationsPerPlayer(), manager.getMaxNameLength(), manager.getMaxDescLength()));
 	}
 }
